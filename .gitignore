@@ -1,3 +1,7 @@
+# NAJ Added
+scorep-*
+scorep.c
+
 *.py[cod]
 
 # C extensions
