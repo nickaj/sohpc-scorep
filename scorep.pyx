@@ -87,5 +87,66 @@ def region_end(name):
 
     user.SCOREP_User_RegionEnd(handle)
 
+def region_init(name):
+    """Register a region marked by NAME"""
+    cdef user.SCOREP_User_RegionHandle handle
+    cdef char *c_name = name
+    cdef user.SCOREP_User_RegionType c_type
+
+    c_type = user.SCOREP_USER_REGION_TYPE_COMMON
+
+    h = _region_handles.get(name)
+    if h:
+        # Convert the cached value into a handle
+        handle = <user.SCOREP_User_RegionHandle><uintptr_t>h
+    else:
+        handle = user.SCOREP_USER_INVALID_REGION
+    # Register the region
+    user.SCOREP_User_RegionInit(&handle, &last_file_name,
+                                 &last_file_handle,
+                                 c_name, c_type,
+                                 "test.py", 1)
+    # Cache
+    _region_handles[name] = <uintptr_t>handle
+
+def region_enter(name):
+    """Generate an enter event for the specified region by NAME"""
+    cdef user.SCOREP_User_RegionHandle handle
+    h = _region_handles.get(name)
+    if h:
+        # Handle should be in the cache
+        handle = <user.SCOREP_User_RegionHandle><uintptr_t>h
+    else:
+        # region_end without matching region_init
+        raise RuntimeError("Could not find handle for region %s" % name)
+
+    user.SCOREP_User_RegionEnter(handle)
+
+def rewind_region_enter(name):
+    """Generate an enter event for the specified rewind region by NAME"""
+    cdef user.SCOREP_User_RegionHandle handle
+    h = _region_handles.get(name)
+    if h:
+        # Handle should be in the cache
+        handle = <user.SCOREP_User_RegionHandle><uintptr_t>h
+    else:
+        # region_end without matching region_init
+        raise RuntimeError("Could not find handle for region %s" % name)
+
+    user.SCOREP_User_RewindRegionEnter(handle)
+
+def enable_recording():
+    """Enables Recording"""
+    user.SCOREP_User_EnableRecording()
+
+def disable_recording():
+    """Disables Recording"""
+    user.SCOREP_User_DisableRecording()
+
+def recording_enabled():
+    """Check if recording is enabled"""
+    user.SCOREP_User_RecordingEnabled()
+
 # Run initialization routine on module import
 initialize()
+
