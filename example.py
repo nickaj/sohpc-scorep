@@ -12,34 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # Simple example demonstrating scorep usage from python
 import scorep
 from mpi4py import MPI
 c = MPI.COMM_WORLD
 
-def decorator(function):
-  def wrapper():
-    a= function.__name__
-    scorep.region_begin(a)
-    function()
-    scorep.region_end(a)
-  return wrapper
-  
 
-@decorator
 def inner():
+    scorep.region_begin('inner')
 
-   tmp = 1
-   c.Barrier()    
-   for i in xrange(100):
-      tmp *= (i+1)
+    tmp = 1
+    c.Barrier()    
+    for i in xrange(100):
+        tmp *= (i+1)
 
-@decorator
+    scorep.region_end('inner')
+
 def outer():
-  
-   c.Barrier()    
-   for i in xrange(100):
-      inner()
+    scorep.region_begin('outer')
+    c.Barrier()    
+    for i in xrange(100):
+        inner()
+    scorep.region_end('outer')
 
 outer()
